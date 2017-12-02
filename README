@@ -19,3 +19,14 @@ Things to add:
 Allow Redirecting to remote servers
 Create a web interface for configuring redirects
 Create simnple logging to log when a redirect is accessed and by whom.
+Create logic to detect and alert for invalid config, such as duplicate paths or malformed IPs or URLs.
+
+How to Install and Run:
+
+Install prerequisites (see above - if you don't know how, come back when I have better documentationm or message me)
+
+cd ~
+git clone https://github.com/kspillane/pyredirector/
+cd pyredirector
+export FLASK_APP=pyredirector.py
+flask run --host=0.0.0.0
