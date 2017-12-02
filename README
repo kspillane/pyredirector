@@ -4,8 +4,16 @@ A URL redirector written in Python using Flask.
 
 Why?
 
-I run a media server with a bunch of Docler containers to handle automation and services. since the containers all run on different ports, it is hard to keep track of all of them. I decided to write a URL recirector to help simplify access.
+I run a media server with a bunch of Docler containers to handle automation and services.
+Since the containers all run on different ports, it is hard to keep track of all of them.
+I decided to write a URL recirector to help simplify access, and so I can better learn Python.
 
-this is my first time doing a real Python project, first time using flask, and first time putting something on GitHub.
+This is my first time doing a real Python project, first time using flask, and first time putting something on GitHub.
 
 Still a work in progress...
+
+Things to add:
+
+Allow Redirecting to remote servers
+Create a web interface for configuring redirects
+Create simnple logging to log when a redirect is accessed and by whom.
