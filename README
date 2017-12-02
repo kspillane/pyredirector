@@ -2,6 +2,8 @@ PyRedirector
 
 A URL redirector written in Python using Flask.
 
+Requires: Python 2.7+ with Flask and ConfigParser installed.
+
 Why?
 
 I run a media server with a bunch of Docler containers to handle automation and services.
