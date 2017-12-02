@@ -38,7 +38,6 @@ Allow Redirecting to remote servers
 Create a web interface for configuring redirects instead of editing the config file directly.
 Create simnple logging to log when a redirect is accessed and by whom.
 Create logic to detect and alert for invalid configs, such as duplicate paths or malformed IPs or URLs.
-Allow specifying the port in the config file
 Make the documentation look pretty with Markdown
 
 How to Install and Run:
@@ -49,8 +48,7 @@ cd ~
 git clone https://github.com/kspillane/pyredirector/
 cd pyredirector
 Setup your redirects in redirect.ini (see that file for instructions)
-export FLASK_APP=pyredirector.py
-flask run --host=0.0.0.0
+python redirect.py
 
 Open http://your-ip:5000/some_redirect_path_you_specificed_in_the_config
 Tested on Ubuntu 16.04

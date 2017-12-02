@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os, configparser
 from flask import Flask,redirect,abort
 
@@ -5,6 +7,9 @@ config = configparser.ConfigParser()
 config.read('redirect.ini')
 localsrv = config['LOCAL-SERVERS']
 ip = config['DEFAULTS']['localip']
+bind_addr = config['DEFAULTS']['bind_ip']
+listen_port = config['DEFAULTS']['listen_port']
+
 app = Flask(__name__)
 
 @app.route('/<path:path>')
@@ -16,6 +21,4 @@ def hello(path):
     abort(404)
 
 if __name__ == '__main__':
-    # Bind to PORT if defined, otherwise default to 5000.
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host=bind_addr, port=int(listen_port), debug='FALSE')
