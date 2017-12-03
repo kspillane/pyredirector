@@ -34,7 +34,6 @@ Still a work in progress...
 
 Things to add:
 
-Allow Redirecting to remote servers
 Create a web interface for configuring redirects instead of editing the config file directly.
 Create simnple logging to log when a redirect is accessed and by whom.
 Create logic to detect and alert for invalid configs, such as duplicate paths or malformed IPs or URLs.
