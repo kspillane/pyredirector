@@ -6,6 +6,7 @@ from flask import Flask,redirect,abort
 config = configparser.ConfigParser()
 config.read('redirect.ini')
 localsrv = config['LOCAL-SERVERS']
+remotesrv = config['REMOTE-SERVERS']
 ip = config['DEFAULTS']['localip']
 bind_addr = config['DEFAULTS']['bind_ip']
 listen_port = config['DEFAULTS']['listen_port']
@@ -18,6 +19,9 @@ def hello(path):
 	if path == k:
 	    url = 'http://'+ ip + ':' + v
 	    return redirect(url, code=302)
+    for k,v in remotesrv.items():
+	if path == k:
+	    return redirect(v, code=302)
     abort(404)
 
 if __name__ == '__main__':
