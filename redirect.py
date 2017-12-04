@@ -4,15 +4,42 @@ import os, configparser
 from flask import Flask,redirect,abort,request
 from datetime import datetime
 
-config = configparser.ConfigParser()
-config.read('redirect.ini')
-localsrv = config['LOCAL-SERVERS']
-remotesrv = config['REMOTE-SERVERS']
-ip = config['DEFAULTS']['localip']
-bind_addr = config['DEFAULTS']['bind_ip']
-listen_port = config['DEFAULTS']['listen_port']
-logging = config['LOGGING']['logging']
-logfile = config['LOGGING']['logfile']
+def do_config():
+    config = configparser.ConfigParser()
+    
+    global localsrv
+    global remotesrv
+    global ip
+    global bind_addr
+    global listen_port
+    global logging
+    global logfile
+
+    if not os.path.exists('redirect.ini'):
+	config['DEFAULTS'] = {}
+	config['DEFAULTS']['localip'] = ''
+	config['DEFAULTS']['listen_port'] = '5000'
+	config['DEFAULTS']['bind_ip'] = '0.0.0.0'
+	config['LOCAL-SERVERS'] = {}
+	config['REMOTE-SERVERS'] = {}
+	config['LOGGING'] = {}
+	config['LOGGING']['logging'] = 'false'
+	config['LOGGING']['logfile'] = 'pyredirect.log'
+	
+	fh = open('redirect.ini', 'w+')
+	config.write(fh)
+	fh.close()
+
+    config.read('redirect.ini')
+    localsrv = config['LOCAL-SERVERS']
+    remotesrv = config['REMOTE-SERVERS']
+    ip = config['DEFAULTS']['localip']
+    bind_addr = config['DEFAULTS']['bind_ip']
+    listen_port = config['DEFAULTS']['listen_port']
+    logging = config['LOGGING']['logging']
+    logfile = config['LOGGING']['logfile']
+
+    return
 
 app = Flask(__name__)
 
@@ -48,5 +75,5 @@ def hello(path):
     abort(404)
 
 if __name__ == '__main__':
+    do_config()
     app.run(host=bind_addr, port=int(listen_port), debug='FALSE')
-
