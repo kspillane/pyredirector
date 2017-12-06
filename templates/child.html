@@ -1,3 +1,58 @@
-{% extends base.html %}
+{% extends 'index.html' %}
 
-{% block navbar %}
+{% block content %}
+{{ super() }}
+{% if request.path == '/redir/default' %}
+<h2>Default Settings</h2>
+<form class="form-horizontal" action="/redir/update_defaults>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="ip">Bind Address:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="ip" value="{{ ip }}" name="ip">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="port">Bind Port:</label>
+    <div class="col-sm-10"> 
+      <input type="text" class="form-control" id="port" value="{{ port }}" name="port">
+    </div>
+  </div>
+  <div class="form-group"> 
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="submit" class="btn btn-default">Save</button>
+    </div>
+  </div>
+</form>
+{% elif request.path == '/redir/local' %}
+<h2>Local Redirections</h2>
+<p>Use the table below to add or delete redirections to services running on the local machine.</p>
+<table class="table">
+    <thead>
+	<tr>
+	    <th>Path</th>
+	    <th>Port</th>
+	    <th><soan class="glyphicon glyphicon-pencil"></span></th>
+	</tr>
+    </thead>
+    <tbody>
+	{% for redirect, port in localsrv.iteritems() %}
+	<tr>
+	    <td>{{ redirect }}</td>
+	    <td>{{ port }}</td>
+	    <td data-field="glyphicons"><a href="#"><span class="glyphicon glyphicon-minus"></span></a></td>
+	</tr>
+	{% endfor %}
+	<form action="/redir/local/add">
+	<tr>
+	    <td><input type="text" placeholder="redirect path (i.e. /something)" name="path"></td>
+	    <td><input type="text" placeholder="redirect port (i.e. 12345)" name="port"></td>
+	    <td data-field="glyphicons"><span class="glyphicon glyphicon-plus"></span></td>
+	</tr>
+	</form>
+    </tbody>
+</table>
+{% else %}
+<h2>The requested URL: {{ request.path }} has not been coded for yet.</h2>
+<p>Sorry, chekc back soon!</p>
+{% endif %}
+{% endblock %}

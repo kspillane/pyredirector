@@ -71,19 +71,19 @@ def send_js(path):
 
 @app.route('/redir')
 def send_index():
-    return render_template('index.html')
+    return render_template('child.html')
 
 @app.route('/redir/local')
 def view_local_srv():
-    return render_template('index.html', localsrv, ip)
+    return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
 @app.route('/redir/remote')
 def view_remote_srv():
-    return render_template('index.html', remotesrv)
+    return render_template('child.html', title='Remote Redirection', **remotesrv)
 
 @app.route('/redir/default')
 def view_defaults():
-    return render_template('index.html', bind_addr, listen_port)
+    return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
 
 @app.route('/<path:path>')
 def hello(path):
