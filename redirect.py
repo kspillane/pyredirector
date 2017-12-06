@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 import os, configparser
-from flask import Flask,redirect,abort,request
+from flask import Flask,redirect,abort,request,send_from_directory,render_template
 from datetime import datetime
 
-def do_config():
+def load_config():
     config = configparser.ConfigParser()
     
     global localsrv
@@ -60,6 +60,31 @@ def do_logging(url):
 
     return
 
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory('templates/css/', path)
+
+@app.route('/vendor/<path:path>')
+def send_js(path):
+    print('Getting vendor. Path is: ' + path)
+    return send_from_directory('templates/vendor/', path)
+
+@app.route('/redir')
+def send_index():
+    return render_template('index.html')
+
+@app.route('/redir/local')
+def view_local_srv():
+    return render_template('index.html', localsrv, ip)
+
+@app.route('/redir/remote')
+def view_remote_srv():
+    return render_template('index.html', remotesrv)
+
+@app.route('/redir/default')
+def view_defaults():
+    return render_template('index.html', bind_addr, listen_port)
+
 @app.route('/<path:path>')
 def hello(path):
     for k,v in localsrv.items():
@@ -75,5 +100,6 @@ def hello(path):
     abort(404)
 
 if __name__ == '__main__':
-    do_config()
-    app.run(host=bind_addr, port=int(listen_port), debug='FALSE')
+    load_config()
+    app.run(host=bind_addr, port=int(listen_port), debug='True')
+
