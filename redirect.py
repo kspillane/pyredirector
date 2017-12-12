@@ -4,16 +4,16 @@ import os, configparser
 from flask import Flask,redirect,abort,request,send_from_directory,render_template
 from datetime import datetime
 
+global localsrv
+global remotesrv
+global ip
+global bind_addr
+global listen_port
+global logging
+global logfile
+
 def load_config():
     config = configparser.ConfigParser()
-    
-    global localsrv
-    global remotesrv
-    global ip
-    global bind_addr
-    global listen_port
-    global logging
-    global logfile
 
     if not os.path.exists('redirect.ini'):
 	config['DEFAULTS'] = {}
@@ -29,6 +29,9 @@ def load_config():
 	fh = open('redirect.ini', 'w+')
 	config.write(fh)
 	fh.close()
+	reload_config()
+
+def reload_config():
 
     config.read('redirect.ini')
     localsrv = config['LOCAL-SERVERS']
@@ -39,7 +42,6 @@ def load_config():
     logging = config['LOGGING']['logging']
     logfile = config['LOGGING']['logfile']
 
-    return
 
 app = Flask(__name__)
 
@@ -73,13 +75,17 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
+@app.route('/redir/localupdate')
+def update_local():
+    
+
 @app.route('/redir/local')
 def view_local_srv():
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
 @app.route('/redir/remote')
 def view_remote_srv():
-    return render_template('child.html', title='Remote Redirection', **remotesrv)
+    return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
 
 @app.route('/redir/default')
 def view_defaults():

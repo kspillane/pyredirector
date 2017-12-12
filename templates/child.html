@@ -46,11 +46,41 @@
 	<tr>
 	    <td><input type="text" placeholder="redirect path (i.e. /something)" name="path"></td>
 	    <td><input type="text" placeholder="redirect port (i.e. 12345)" name="port"></td>
-	    <td data-field="glyphicons"><span class="glyphicon glyphicon-plus"></span></td>
+	    <td data-field="glyphicons"><a href="#"><span class="glyphicon glyphicon-plus"></span></a></td>
 	</tr>
 	</form>
     </tbody>
 </table>
+{% elif request.path == url_for(view_remote_srv) %}
+<h2>Redirections to another server</h2>
+<p>Use the table below to add or delete redirections to services running on another machine.</p>
+<table class="table">
+    <thead>
+	<tr>
+	    <th>Path</th>
+	    <th>URL</th>
+	    <th><soan class="glyphicon glyphicon-pencil"></span></th>
+	</tr>
+    </thead>
+    <tbody>
+	{% for redirect, port in remotesrv.iteritems() %}
+	<tr>
+	    <td>{{ redirect }}</td>
+	    <td>{{ port }}</td>
+	    <td data-field="glyphicons"><a href="#"><span class="glyphicon glyphicon-minus"></span></a></td>
+	</tr>
+	{% endfor %}
+	<form action="/redir/local/add">
+	<tr>
+	    <td><input type="text" placeholder="redirect path (i.e. /something)" name="path"></td>
+	    <td><input type="text" placeholder="URL (i.e. http://foo.com/)" name="url"></td>
+	    <td data-field="glyphicons"><a href="#"><span class="glyphicon glyphicon-plus"></span></a></td>
+	</tr>
+	</form>
+    </tbody>
+</table>
+
+
 {% else %}
 <h2>The requested URL: {{ request.path }} has not been coded for yet.</h2>
 <p>Sorry, chekc back soon!</p>
