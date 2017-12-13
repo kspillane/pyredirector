@@ -1,9 +1,8 @@
-#!/usr/bin/python
-
 import os, configparser
 from flask import Flask,redirect,abort,request,send_from_directory,render_template
 from datetime import datetime
 
+#Setup global variables
 global localsrv
 global remotesrv
 global ip
@@ -12,26 +11,44 @@ global listen_port
 global logging
 global logfile
 
+#Define default config for when no config file exists
+def set_default_config():
+    ip = "127.0.0.1"
+    bind_addr = "0.0.0.0"
+    listen_port = "5000"
+    logging = "True"
+    logfile = "redirect.log"
+
+    return
+
+#Update the configuration file with the values form the globals
+def write_config():
+    config = configparser,configparser()
+
+    config['DEFAULTS'] = {}
+    config['DEFAULTS']['localip'] = localip
+    config['DEFAULTS']['listen_port'] = listen_port
+    config['DEFAULTS']['bind_ip'] = bind_addr
+    config['LOCAL-SERVERS'] = {}
+    config['REMOTE-SERVERS'] = {}
+    config['LOGGING'] = {}
+    config['LOGGING']['logging'] = logging
+    config['LOGGING']['logfile'] = logfile
+    
+    fh = open('redirect.ini', 'w+')
+    config.write(fh)
+    fh.close()
+
+    load_config()
+
+    return
+
+#Read config file to globals
 def load_config():
     config = configparser.ConfigParser()
 
     if not os.path.exists('redirect.ini'):
-	config['DEFAULTS'] = {}
-	config['DEFAULTS']['localip'] = ''
-	config['DEFAULTS']['listen_port'] = '5000'
-	config['DEFAULTS']['bind_ip'] = '0.0.0.0'
-	config['LOCAL-SERVERS'] = {}
-	config['REMOTE-SERVERS'] = {}
-	config['LOGGING'] = {}
-	config['LOGGING']['logging'] = 'false'
-	config['LOGGING']['logfile'] = 'pyredirect.log'
-	
-	fh = open('redirect.ini', 'w+')
-	config.write(fh)
-	fh.close()
-	reload_config()
-
-def reload_config():
+       set_default_config()
 
     config.read('redirect.ini')
     localsrv = config['LOCAL-SERVERS']
@@ -42,31 +59,35 @@ def reload_config():
     logging = config['LOGGING']['logging']
     logfile = config['LOGGING']['logfile']
 
+    return
 
 app = Flask(__name__)
 
+#Add requests to logfile if enabled
 def do_logging(url):
     if logging.upper() == 'TRUE':
         timestamp = str(datetime.now())
-	path = request.path
+        path = request.path
         ip = request.remote_addr
         logentry = timestamp + " " + path + " acceessed by " + ip + " redirected to " + url + " \n"
 
-	if os.path.exists(str(logfile)):
-	    mode = 'a+'
-	else:
-	    mode = 'w+'
+    if os.path.exists(str(logfile)):
+        mode = 'a+'
+    else:
+        mode = 'w+'
         fh = open(str(logfile), mode)
 	fh.write(logentry)
-        fh.close()
+    fh.close()
 
     return
 
 @app.route('/css/<path:path>')
+#Hanfle requests for css
 def send_css(path):
     return send_from_directory('templates/css/', path)
 
 @app.route('/vendor/<path:path>')
+#Handle requests for scripts
 def send_js(path):
     print('Getting vendor. Path is: ' + path)
     return send_from_directory('templates/vendor/', path)
@@ -75,23 +96,37 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
-@app.route('/redir/localupdate')
+@app.route('/redir/local/add')
+#Update Local Server
 def update_local():
-    
+    localsrv.update({request.path : request.port})
+    write_config()
+    return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
+
+@app.route('/redir/remote/add')
+#Update Remote Server
+def update_local():
+    remotesrv.update({request.path : request.url})
+    write_config()
+    return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
 
 @app.route('/redir/local')
+#Display Local Servers
 def view_local_srv():
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
 @app.route('/redir/remote')
+#Display remote servers
 def view_remote_srv():
     return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
 
 @app.route('/redir/default')
+#Display default settings
 def view_defaults():
     return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
 
 @app.route('/<path:path>')
+#Main redirect handler
 def hello(path):
     for k,v in localsrv.items():
 	if path == k:
