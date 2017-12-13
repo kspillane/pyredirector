@@ -2,41 +2,6 @@ import os, configparser
 from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
 
-
-
-
-#Define default config for when no config file exists
-def set_default_config():
-    ip = "127.0.0.1"
-    bind_addr = "0.0.0.0"
-    listen_port = "5000"
-    logging = "True"
-    logfile = "redirect.log"
-
-    return
-
-#Update the configuration file with the values form the globals
-def write_config():
-    config = configparser,configparser()
-
-    config['DEFAULTS'] = {}
-    config['DEFAULTS']['localip'] = localip
-    config['DEFAULTS']['listen_port'] = listen_port
-    config['DEFAULTS']['bind_ip'] = bind_addr
-    config['LOCAL-SERVERS'] = {}
-    config['REMOTE-SERVERS'] = {}
-    config['LOGGING'] = {}
-    config['LOGGING']['logging'] = logging
-    config['LOGGING']['logfile'] = logfile
-    
-    fh = open('redirect.ini', 'w+')
-    config.write(fh)
-    fh.close()
-
-    load_config()
-
-    return
-
 #Read config file to globals
 def load_config():
     config = configparser.ConfigParser()
@@ -61,6 +26,44 @@ def load_config():
     listen_port = config['DEFAULTS']['listen_port']
     logging = config['LOGGING']['logging']
     logfile = config['LOGGING']['logfile']
+
+    return
+
+#Define default config for when no config file exists
+def set_default_config():
+    ip = "127.0.0.1"
+    bind_addr = "0.0.0.0"
+    listen_port = "5000"
+    logging = "True"
+    logfile = "redirect.log"
+
+    return
+
+#Update the configuration file with the values form the globals
+def write_config():
+    config = configparser.ConfigParser()
+
+    config['DEFAULTS'] = {}
+    config['DEFAULTS']['localip'] = ip
+    config['DEFAULTS']['listen_port'] = listen_port
+    config['DEFAULTS']['bind_ip'] = bind_addr
+    config['LOCAL-SERVERS'] = {}
+    config['REMOTE-SERVERS'] = {}
+    config['LOGGING'] = {}
+    config['LOGGING']['logging'] = logging
+    config['LOGGING']['logfile'] = logfile
+    
+    for i, v in remotesrv.items():
+    	config['REMOTE-SERVERS'][i] = v
+
+    for i, v in localsrv.items():
+    	config['LOCAL-SERVERS'][i] = v
+    
+    fh = open('redirect.ini', 'w+')
+    config.write(fh)
+    fh.close()
+
+    load_config()
 
     return
 
@@ -99,19 +102,19 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
-@app.route('/redir/local/add')
+@app.route('/redir/local_add', methods=['GET', 'POST'])
 #Update Local Server
 def update_local():
-    localsrv.update({request.path : request.port})
+    localsrv.update({str(request.form['path']) : str(request.form['port'])})
     write_config()
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
-@app.route('/redir/remote/add')
+@app.route('/redir/remote_add', methods=['GET', 'POST'])
 #Update Remote Server
 def update_remote():
-    remotesrv.update({request.path : request.url})
+    remotesrv.update({str(request.form['path']) : str(request.form['url'])})
     write_config()
-    return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
+    return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
 
 @app.route('/redir/local')
 #Display Local Servers
@@ -121,7 +124,7 @@ def view_local_srv():
 @app.route('/redir/remote')
 #Display remote servers
 def view_remote_srv():
-    return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
+    return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
 
 @app.route('/redir/default')
 #Display default settings
