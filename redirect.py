@@ -1,4 +1,4 @@
-import os, configparser
+import os, configparser, re
 from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
 
@@ -87,6 +87,16 @@ def do_logging(url):
 
     return
 
+def validate_form(valdata):
+ 	for data, pattern in valdata.items():
+ 		val = re.match(pattern, data)
+ 		print data
+ 		print pattern
+ 		print val
+ 		if not val:
+ 			return data
+ 	return
+
 @app.route('/css/<path:path>')
 #Hanfle requests for css
 def send_css(path):
@@ -101,6 +111,26 @@ def send_js(path):
 @app.route('/redir')
 def send_index():
     return render_template('child.html')
+
+@app.route('/redir/default_update', methods=['GET', 'POST'])
+def update_defaults():
+	global bind_addr
+	global listen_port
+
+	ip_pattern = "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+	port_pattern = "^\d{4,5}$"
+	formdata = {request.form['ip']: ip_pattern, request.form['port']: port_pattern}
+	valdata = validate_form(formdata)
+
+	if valdata:
+		print "there was a problem with entry: " + valdata
+		abort(403)
+		return
+	bind_addr = str(request.form['ip'])
+	listen_port = str(request.form['port'])
+
+	write_config()
+	return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
 
 @app.route('/redir/local_add', methods=['GET', 'POST'])
 #Update Local Server
