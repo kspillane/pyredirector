@@ -1,15 +1,9 @@
 import os, configparser
-from flask import Flask,redirect,abort,request,send_from_directory,render_template
+from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
 
-#Setup global variables
-global localsrv
-global remotesrv
-global ip
-global bind_addr
-global listen_port
-global logging
-global logfile
+
+
 
 #Define default config for when no config file exists
 def set_default_config():
@@ -47,6 +41,15 @@ def write_config():
 def load_config():
     config = configparser.ConfigParser()
 
+    #Setup global variables
+    global localsrv
+    global remotesrv
+    global ip
+    global bind_addr
+    global listen_port
+    global logging
+    global logfile
+
     if not os.path.exists('redirect.ini'):
        set_default_config()
 
@@ -77,7 +80,7 @@ def do_logging(url):
         mode = 'w+'
         fh = open(str(logfile), mode)
 	fh.write(logentry)
-    fh.close()
+        fh.close()
 
     return
 
@@ -105,7 +108,7 @@ def update_local():
 
 @app.route('/redir/remote/add')
 #Update Remote Server
-def update_local():
+def update_remote():
     remotesrv.update({request.path : request.url})
     write_config()
     return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
@@ -143,4 +146,3 @@ def hello(path):
 if __name__ == '__main__':
     load_config()
     app.run(host=bind_addr, port=int(listen_port), debug='True')
-
