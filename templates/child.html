@@ -79,7 +79,18 @@
 	</form>
     </tbody>
 </table>
-
+{% elif (request.path == '/redir/logs') %}
+<h2>{{ title }}</h2>
+<p></p>
+<table class="table">
+    <tbody>
+	{% for line in log %}
+	<tr>
+	    <td>{{ line }}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
 
 {% else %}
 <h2>The requested URL: {{ request.path }} has not been coded for yet.</h2>

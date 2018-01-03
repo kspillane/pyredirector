@@ -1,47 +1,6 @@
-import os, configparser
-from flask import Flask,redirect,abort,request,send_from_directory,render_template
+import os, configparser, re
+from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
-
-#Define default config for when no config file exists
-def set_default_config():
-    #Setup global variables
-    global ip
-    global bind_addr
-    global listen_port
-    global logging
-    global logfile
-
-    ip = "127.0.0.1"
-    bind_addr = "0.0.0.0"
-    listen_port = "5000"
-    logging = "True"
-    logfile = "redirect.log"
-
-    write_config();
-
-    return
-
-#Update the configuration file with the values form the globals
-def write_config():
-    config = configparser.ConfigParser()
-
-    config['DEFAULTS'] = {}
-    config['DEFAULTS']['localip'] = ip
-    config['DEFAULTS']['listen_port'] = listen_port
-    config['DEFAULTS']['bind_ip'] = bind_addr
-    config['LOCAL-SERVERS'] = {}
-    config['REMOTE-SERVERS'] = {}
-    config['LOGGING'] = {}
-    config['LOGGING']['logging'] = logging
-    config['LOGGING']['logfile'] = logfile
-    
-    fh = open('redirect.ini', 'w+')
-    config.write(fh)
-    fh.close()
-
-    load_config()
-    
-    return
 
 #Read config file to globals
 def load_config():
@@ -60,6 +19,7 @@ def load_config():
        set_default_config()
 
     config.read('redirect.ini')
+
     localsrv = config['LOCAL-SERVERS']
     remotesrv = config['REMOTE-SERVERS']
     ip = config['DEFAULTS']['localip']
@@ -67,6 +27,43 @@ def load_config():
     listen_port = config['DEFAULTS']['listen_port']
     logging = config['LOGGING']['logging']
     logfile = config['LOGGING']['logfile']
+
+    return
+
+#Define default config for when no config file exists
+def set_default_config():
+    ip = "127.0.0.1"
+    bind_addr = "0.0.0.0"
+    listen_port = "5000"
+    logging = "True"
+    logfile = "redirect.log"
+
+    return
+
+#Update the configuration file with the values form the globals
+def write_config():
+    config = configparser.ConfigParser()
+
+    config['DEFAULTS'] = {}
+    config['DEFAULTS']['localip'] = ip
+    config['DEFAULTS']['listen_port'] = listen_port
+    config['DEFAULTS']['bind_ip'] = bind_addr
+    config['LOCAL-SERVERS'] = {}
+    config['REMOTE-SERVERS'] = {}
+    config['LOGGING'] = {}
+    config['LOGGING']['logging'] = logging
+    config['LOGGING']['logfile'] = logfile
+
+    for i, v in remotesrv.items():
+        config['REMOTE-SERVERS'][i] = v
+    for i, v in localsrv.items():
+        config['LOCAL-SERVERS'][i] = v
+
+    fh = open('redirect.ini', 'w+')
+    config.write(fh)
+    fh.close()
+
+    load_config()
 
     return
 
@@ -90,6 +87,16 @@ def do_logging(url):
 
     return
 
+def validate_form(valdata):
+    for data, pattern in valdata.items():
+        val = re.match(pattern, data)
+        print data
+        print pattern
+        print val
+        if not val:
+            return data
+    return
+
 @app.route('/css/<path:path>')
 #Hanfle requests for css
 def send_css(path):
@@ -105,20 +112,49 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
-@app.route('/redir/local_add', methods=['POST'])
+@app.route('/redir/default_update', methods=['GET', 'POST'])
+def update_defaults():
+    global bind_addr
+    global listen_port
+
+    ip_pattern = "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+    port_pattern = "^\d{4,5}$"
+    formdata = {request.form['ip']: ip_pattern, request.form['port']: port_pattern}
+    valdata = validate_form(formdata)
+
+    if valdata:
+        print "there was a problem with entry: " + valdata
+        abort(403)
+        return
+    bind_addr = str(request.form['ip'])
+    listen_port = str(request.form['port'])
+    write_config()
+
+    return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
+
+@app.route('/redir/local_add', methods=['GET', 'POST'])
 #Update Local Server
 def update_local():
-    global localsrv
-    localsrv.update({request.form['path'] : request.form['port']})
+    port_pattern = "^\d{4,5}$"
+    formdata = {request.form['port']: port_pattern}
+    valdata = validate_form(formdata)
+
+    if valdata:
+        print "there was a problem with entry: " + valdata
+        abort(403)
+        return
+
+    localsrv.update({str(request.form['path']) : str(request.form['port'])})
     write_config()
+
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
-@app.route('/redir/remote_add', methods=['POST'])
+@app.route('/redir/remote_add', methods=['GET', 'POST'])
 #Update Remote Server
 def update_remote():
-    global remotesrv
-    remotesrv.update({request.form['path'] : request.form['url']})
+    remotesrv.update({str(request.form['path']) : str(request.form['url'])})
     write_config()
+
     return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
 
 @app.route('/redir/local')
@@ -136,22 +172,31 @@ def view_remote_srv():
 def view_defaults():
     return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
 
+@app.route('/redir/logs')
+#Display remote servers
+def view_logs():
+    if logging:
+        fh = open(str(logfile), "r")
+        logs = fh.readlines()
+        return render_template('child.html', title='Redirect Access Logs', log=logs)
+    else:
+        return render_template('child_html', title='Redirect Access Logs')
+
 @app.route('/<path:path>')
 #Main redirect handler
-def do_redirects(path):
+def hello(path):
     for k,v in localsrv.items():
-	if path == k:
-	    url = 'http://'+ ip + ':' + v
-	    do_logging(url)
-	    return redirect(url, code=302)
+        if path == k:
+            url = 'http://'+ ip + ':' + v
+            do_logging(url)
+            return redirect(url, code=302)
     for k,v in remotesrv.items():
-	if path == k:
-	    do_logging(v)
-	    return redirect(v, code=302)
+        if path == k:
+            do_logging(v)
+            return redirect(v, code=302)
     do_logging("Error 404 - Not Found")
     abort(404)
 
 if __name__ == '__main__':
     load_config()
     app.run(host=bind_addr, port=int(listen_port), debug='True')
-
