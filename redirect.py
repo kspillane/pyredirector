@@ -180,7 +180,7 @@ def view_logs():
         logs = fh.readlines()
         return render_template('child.html', title='Redirect Access Logs', log=logs)
     else:
-        return render_template('child_html', title='Redirect Access Logs')
+        return render_template('child.html', title='Redirect Access Logs')
 
 @app.route('/<path:path>')
 #Main redirect handler

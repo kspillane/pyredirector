@@ -82,6 +82,7 @@
 {% elif (request.path == '/redir/logs') %}
 <h2>{{ title }}</h2>
 <p></p>
+{% if log %}
 <table class="table">
     <tbody>
 	{% for line in log %}
@@ -91,7 +92,10 @@
 	{% endfor %}
 	</tbody>
 </table>
-
+{% else %}
+<p>Logging is disabled or the logfile couldn't be found!</p>
+<p>You can enable logging and set the logfile in <a href="{{ url_for('view_defaults') }}">settings</a>.</p>
+{% endif %}
 {% else %}
 <h2>The requested URL: {{ request.path }} has not been coded for yet.</h2>
 <p>Sorry, check back soon!</p>
