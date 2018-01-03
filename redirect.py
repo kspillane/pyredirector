@@ -39,6 +39,8 @@ def write_config():
     config.write(fh)
     fh.close()
 
+    load_config()
+    
     return
 
 #Read config file to globals
@@ -103,21 +105,21 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
-@app.route('/redir/local/add', methods=['POST'])
+@app.route('/redir/local_add', methods=['POST'])
 #Update Local Server
 def update_local():
     global localsrv
-    localsrv.update({request.path : request.port})
+    localsrv.update({request.form['path'] : request.form['port']})
     write_config()
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
-@app.route('/redir/remote/add', methods=['POST'])
+@app.route('/redir/remote_add', methods=['POST'])
 #Update Remote Server
 def update_remote():
     global remotesrv
-    remotesrv.update({request.path : request.url})
+    remotesrv.update({request.form['path'] : request.form['url']})
     write_config()
-    return render_template('child.html', title='Remote Redirection', remotesrc=remotesrv)
+    return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
 
 @app.route('/redir/local')
 #Display Local Servers
