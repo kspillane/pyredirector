@@ -35,7 +35,7 @@ def set_default_config():
     ip = "127.0.0.1"
     bind_addr = "0.0.0.0"
     listen_port = "5000"
-    logging = "True"
+    logging = "true"
     logfile = "redirect.log"
 
     return
@@ -77,22 +77,19 @@ def do_logging(url):
         ip = request.remote_addr
         logentry = timestamp + " " + path + " acceessed by " + ip + " redirected to " + url + " \n"
 
-    if os.path.exists(str(logfile)):
-        mode = 'a+'
-    else:
-        mode = 'w+'
-    fh = open(str(logfile), mode)
-    fh.write(logentry)
-    fh.close()
+        if os.path.exists(str(logfile)):
+                mode = 'a+'
+        else:
+                mode = 'w+'
+        fh = open(str(logfile), mode)
+        fh.write(logentry)
+        fh.close()
 
     return
 
 def validate_form(valdata):
     for data, pattern in valdata.items():
         val = re.match(pattern, data)
-        print data
-        print pattern
-        print val
         if not val:
             return data
     return
@@ -112,11 +109,35 @@ def send_js(path):
 def send_index():
     return render_template('child.html')
 
+
+def update_logs():
+    global logfile
+    global logging
+
+    print "logging is: " + str(logging)
+
+    print "form data is: " + str(request.form.get('logging'))
+
+    if str(request.form.get('logging')) == "true":
+            logging = "true"
+    else:
+            logging = "false"
+
+    print "logging now is: " + str(logging)
+
+    if not os.path.exists(str(request.form['logfile'])):
+        with open(str(request.form['logfile']), 'a'):
+            os.utime(str(request.form['logfile']), "None")
+
+    logfile = str(request.form['logfile'])
+
+    return
+
 @app.route('/redir/default_update', methods=['GET', 'POST'])
 def update_defaults():
     global bind_addr
     global listen_port
-
+    
     ip_pattern = "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
     port_pattern = "^\d{4,5}$"
     formdata = {request.form['ip']: ip_pattern, request.form['port']: port_pattern}
@@ -128,9 +149,11 @@ def update_defaults():
         return
     bind_addr = str(request.form['ip'])
     listen_port = str(request.form['port'])
+
+    update_logs()
     write_config()
 
-    return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
+    return redirect(url_for('view_defaults'))
 
 @app.route('/redir/local_add', methods=['GET', 'POST'])
 #Update Local Server
@@ -147,7 +170,7 @@ def update_local():
     localsrv.update({str(request.form['path']) : str(request.form['port'])})
     write_config()
 
-    return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
+    return redirect(url_for('view_local_srv'))
 
 @app.route('/redir/remote_add', methods=['GET', 'POST'])
 #Update Remote Server
@@ -155,7 +178,7 @@ def update_remote():
     remotesrv.update({str(request.form['path']) : str(request.form['url'])})
     write_config()
 
-    return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
+    return redirect(url_for('view_remote_srv'))
 
 @app.route('/redir/local')
 #Display Local Servers
@@ -170,7 +193,7 @@ def view_remote_srv():
 @app.route('/redir/default')
 #Display default settings
 def view_defaults():
-    return render_template('child.html', ip=bind_addr, port=listen_port, title='Default')
+    return render_template('child.html', ip=bind_addr, port=listen_port, logfile=logfile, logging=logging, title='Default')
 
 @app.route('/redir/logs')
 #Display remote servers
