@@ -1,16 +1,17 @@
-####PyRedirector
+PyRedirector
+======
 
 A URL redirector written in Python using Flask.
 
 Requires: Python 2.7+ with Flask and ConfigParser installed.
 
-##Why?
+## Why?
 
 I run a media server with a bunch of Docker containers to handle automation and services.
 Since the containers all run on different ports, it is hard to keep track of all of them.
 I decided to write a URL recirector to help simplify access, and so I can better learn Python.
 
-##What is a URL redirector?
+## What is a URL redirector?
 
 Suppose you have two web applications running:
 
@@ -20,7 +21,6 @@ Server Two - http://foo.com:8000/
 Server Three - http://foo.com:25556/
 ```
 And you have trouble remembering what ports each web app's interface is at, this program allows you to do:
-
 ```
 http://foo.com/server1 -> http://foo.com:1500/
 http://foo.com/server2 -> http://foo.com:8000/
@@ -33,7 +33,7 @@ This is my first time doing a real Python project, first time using flask, and f
 
 Still a work in progress...
 
-###How to Install and Run:
+## How to Install and Run:
 
 Install prerequisites (see above - if you don't know how, come back when I have better documentationm or message me)
 
