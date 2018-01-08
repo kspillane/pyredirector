@@ -162,3 +162,58 @@
 2018-01-07 19:35:38.791647 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
 2018-01-07 19:35:39.671163 /admin/logs acceessed by 192.168.1.53 redirected to ADMIN - view logs 
 2018-01-07 19:35:40.999434 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:05:21.468619 /admin acceessed by 192.168.1.53 redirected to ADMIN - admin landing page 
+2018-01-08 14:05:21.985430 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:05:24.738639 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:05:24.861834 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:05:32.839727 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 14:05:42.229997 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:05:42.366816 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:07:08.755138 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 14:07:19.958072 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:07:20.099184 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:07:21.799131 /admin/local acceessed by 192.168.1.53 redirected to ADMIN - view Local redirects 
+2018-01-08 14:07:21.924056 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:07:22.620301 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:07:22.731033 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:17:05.612371 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:17:05.823607 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:17:14.175637 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 14:18:15.983461 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:18:16.160230 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:18:23.351531 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 14:18:42.032933 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 14:18:42.172479 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 14:18:47.663862 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:20:42.620462 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:20:42.832738 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:20:51.067266 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:23:48.317523 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:23:48.461995 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:23:56.778407 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:30:01.062541 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:30:01.226368 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:30:06.854860 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:32:08.426885 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:32:08.614325 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:32:15.331110 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:36:28.426955 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:36:28.594700 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:36:34.625783 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:47:12.916407 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:47:13.058203 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:47:18.075722 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:53:10.846700 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:53:10.998159 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:53:16.392050 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:55:16.837558 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:55:16.989811 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:55:22.551538 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:58:38.222638 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:58:38.379199 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 15:58:44.287585 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
+2018-01-08 15:58:56.480330 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 15:58:56.620609 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 16:04:07.545448 /admin/default acceessed by 192.168.1.53 redirected to ADMIN - view default settings 
+2018-01-08 16:04:07.827241 /favicon.ico acceessed by 192.168.1.53 redirected to Error 404 - Not Found 
+2018-01-08 16:04:13.245591 /admin/default_update acceessed by 192.168.1.53 redirected to ADMIN - update defaults - Reloading... 
