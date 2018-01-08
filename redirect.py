@@ -1,6 +1,13 @@
 import os, configparser, re
 from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
+from werkzeug.serving import run_simple
+
+global admin_url
+global to_reload
+
+to_reload = False
+admin_url = "admin"
 
 #Read config file to globals
 def load_config():
@@ -27,16 +34,24 @@ def load_config():
     listen_port = config['DEFAULTS']['listen_port']
     logging = config['LOGGING']['logging']
     logfile = config['LOGGING']['logfile']
-
+      
     return
 
 #Define default config for when no config file exists
 def set_default_config():
+    global ip
+    global bind_addr
+    global listen_port
+    global logging
+    global logfile
+
     ip = "127.0.0.1"
     bind_addr = "0.0.0.0"
     listen_port = "5000"
     logging = "true"
     logfile = "redirect.log"
+
+    write_config()
 
     return
 
@@ -48,6 +63,7 @@ def write_config():
     config['DEFAULTS']['localip'] = ip
     config['DEFAULTS']['listen_port'] = listen_port
     config['DEFAULTS']['bind_ip'] = bind_addr
+    config['DEFAULTS']['admin_url'] = admin_url
     config['LOCAL-SERVERS'] = {}
     config['REMOTE-SERVERS'] = {}
     config['LOGGING'] = {}
@@ -67,8 +83,6 @@ def write_config():
 
     return
 
-app = Flask(__name__)
-
 #Add requests to logfile if enabled
 def do_logging(url):
     if logging.upper() == 'TRUE':
@@ -87,6 +101,7 @@ def do_logging(url):
 
     return
 
+#Regex to make sure the form data submissions is valid
 def validate_form(valdata):
     for data, pattern in valdata.items():
         val = re.match(pattern, data)
@@ -94,36 +109,14 @@ def validate_form(valdata):
             return data
     return
 
-@app.route('/css/<path:path>')
-#Hanfle requests for css
-def send_css(path):
-    return send_from_directory('templates/css/', path)
-
-@app.route('/vendor/<path:path>')
-#Handle requests for scripts
-def send_js(path):
-    print('Getting vendor. Path is: ' + path)
-    return send_from_directory('templates/vendor/', path)
-
-@app.route('/redir')
-def send_index():
-    return render_template('child.html')
-
-
 def update_logs():
     global logfile
     global logging
-
-    print "logging is: " + str(logging)
-
-    print "form data is: " + str(request.form.get('logging'))
 
     if str(request.form.get('logging')) == "true":
             logging = "true"
     else:
             logging = "false"
-
-    print "logging now is: " + str(logging)
 
     if not os.path.exists(str(request.form['logfile'])):
         with open(str(request.form['logfile']), 'a'):
@@ -133,93 +126,194 @@ def update_logs():
 
     return
 
-@app.route('/redir/default_update', methods=['GET', 'POST'])
-def update_defaults():
-    global bind_addr
-    global listen_port
-    
-    ip_pattern = "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
-    port_pattern = "^\d{4,5}$"
-    formdata = {request.form['ip']: ip_pattern, request.form['port']: port_pattern}
-    valdata = validate_form(formdata)
+def get_app():
 
-    if valdata:
-        print "there was a problem with entry: " + valdata
-        abort(403)
-        return
-    bind_addr = str(request.form['ip'])
-    listen_port = str(request.form['port'])
+    app = Flask(__name__)
 
-    update_logs()
-    write_config()
+    @app.route('/css/<path:path>')
+    #Hanfle requests for css
+    def send_css(path):
+        return send_from_directory('templates/css/', path)
 
-    return redirect(url_for('view_defaults'))
+    @app.route('/vendor/<path:path>')
+    #Handle requests for scripts
+    def send_js(path):
+       return send_from_directory('templates/vendor/', path)
 
-@app.route('/redir/local_add', methods=['GET', 'POST'])
-#Update Local Server
-def update_local():
-    port_pattern = "^\d{4,5}$"
-    formdata = {request.form['port']: port_pattern}
-    valdata = validate_form(formdata)
+    @app.route(str('/' + admin_url))
+    #Default admin landing page
+    def send_index():
+        do_logging("ADMIN - admin landing page")
 
-    if valdata:
-        print "there was a problem with entry: " + valdata
-        abort(403)
-        return
+        return render_template('child.html')
 
-    localsrv.update({str(request.form['path']) : str(request.form['port'])})
-    write_config()
+    @app.route(str("/" + admin_url + "/default_update"), methods=['POST'])
+    def update_defaults():
+        global bind_addr
+        global listen_port
+        global admin_url
+        global to_reload
+        global ip
+        
+        ip_pattern = "^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
+        port_pattern = "^\d{4,5}$"
+        formdata = {request.form['ip']: ip_pattern, request.form['port']: port_pattern}
+        valdata = validate_form(formdata)
 
-    return redirect(url_for('view_local_srv'))
+        if valdata:
+            print "there was a problem with entry: " + valdata
+            abort(403)
+            return
 
-@app.route('/redir/remote_add', methods=['GET', 'POST'])
-#Update Remote Server
-def update_remote():
-    remotesrv.update({str(request.form['path']) : str(request.form['url'])})
-    write_config()
+        bind_addr = str(request.form['ip'])
+        listen_port = str(request.form['port'])
+        admin_url = str(request.form['admin_url'])
+        ip = str(request.form['local_ip'])
 
-    return redirect(url_for('view_remote_srv'))
+        update_logs()
+        write_config()
+        do_logging("ADMIN - update defaults - Reloading...")
 
-@app.route('/redir/local')
-#Display Local Servers
-def view_local_srv():
-    return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
+        to_reload = True
+        
+        return redirect(str("http://" + ip + ":" + listen_port + "/" + admin_url + "/default"), code="302")
 
-@app.route('/redir/remote')
-#Display remote servers
-def view_remote_srv():
-    return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
+    @app.route(str("/" + admin_url + "/local_add"), methods=['POST'])
+    #Update Local Server
+    def update_local():
+        port_pattern = "^\d{4,5}$"
+        formdata = {request.form['port']: port_pattern}
+        valdata = validate_form(formdata)
 
-@app.route('/redir/default')
-#Display default settings
-def view_defaults():
-    return render_template('child.html', ip=bind_addr, port=listen_port, logfile=logfile, logging=logging, title='Default')
+        if valdata:
+            print "there was a problem with entry: " + valdata
+            abort(403)
+            return
 
-@app.route('/redir/logs')
-#Display remote servers
-def view_logs():
-    if logging:
-        fh = open(str(logfile), "r")
-        logs = fh.readlines()
-        return render_template('child.html', title='Redirect Access Logs', log=logs)
-    else:
-        return render_template('child.html', title='Redirect Access Logs')
+        localsrv.update({str(request.form['path']) : str(request.form['port'])})
+        write_config()
+        do_logging("ADMIN - add local redirect")
 
-@app.route('/<path:path>')
-#Main redirect handler
-def hello(path):
-    for k,v in localsrv.items():
-        if path == k:
-            url = 'http://'+ ip + ':' + v
-            do_logging(url)
-            return redirect(url, code=302)
-    for k,v in remotesrv.items():
-        if path == k:
-            do_logging(v)
-            return redirect(v, code=302)
-    do_logging("Error 404 - Not Found")
-    abort(404)
+        return redirect(url_for('view_local_srv'))
+
+    @app.route(str("/" + admin_url + "/local_delete"), methods=['POST'])
+    #Delete local redirects
+    def delete_local():
+        global localsrv
+
+        del localsrv[str(request.form['redir_del'])]
+        write_config()
+        do_logging("ADMIN - delete local redirect")
+
+        return redirect(url_for('view_local_srv'))
+
+    @app.route(str("/" + admin_url + "/remote_add"), methods=['POST'])
+    #Update Remote Server
+    def update_remote():
+        remotesrv.update({str(request.form['path']) : str(request.form['url'])})
+        write_config()
+        do_logging("ADMIN - add remote redirect")
+
+        return redirect(url_for('view_remote_srv'))
+
+    @app.route(str("/" + admin_url + "/remote_delete"), methods=['POST'])
+    #Delete remote redirects
+    def delete_remote():
+        global remotesrv
+
+        del remotesrv[str(request.form['redir_del'])]
+        write_config()
+        do_logging("ADMIN - delete remote redirect")
+
+        return redirect(url_for('view_remote_srv'))
+
+    @app.route(str("/" + admin_url + "/local"))
+    #Display Local Servers
+    def view_local_srv():
+        do_logging("ADMIN - view Local redirects")
+
+        return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
+
+    @app.route(str("/" + admin_url + "/remote"))
+    #Display remote servers
+    def view_remote_srv():
+        do_logging("ADMIN - view remote redirects")
+
+        return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
+
+    @app.route(str("/" + admin_url + "/default"))
+    #Display default settings
+    def view_defaults():
+        do_logging("ADMIN - view default settings")
+
+        return render_template('child.html', ip=bind_addr, port=listen_port, logfile=logfile, logging=logging, admin_url=admin_url, local_ip=ip, title='Default')
+
+    @app.route(str("/" + admin_url + "/logs"))
+    #Display remote servers
+    def view_logs():
+        do_logging("ADMIN - view logs")
+
+        if logging:
+            fh = open(str(logfile), "r")
+            logs = fh.readlines()
+            fh.close
+            return render_template('child.html', title='Redirect Access Logs', log=reversed(logs))
+        else:
+            return render_template('child.html', title='Redirect Access Logs')
+
+    @app.route(str("/" + admin_url + "/clear_logs"), methods=['POST'])
+    def clear_logs():
+        if str(request.form['clearlogs']) == '1':
+            print "we made it here"
+            open(logfile, 'w').close()
+
+        do_logging("ADMIN - Clear Logs")
+
+        return redirect(url_for('view_logs'))
+
+    @app.route('/<path:path>')
+    #Main redirect handler
+    def hello(path):
+        for k,v in localsrv.items():
+            if path == k:
+                url = 'http://'+ ip + ':' + v
+                do_logging(url)
+                return redirect(url, code=302)
+        for k,v in remotesrv.items():
+            if path == k:
+                do_logging(v)
+                return redirect(v, code=302)
+        do_logging("Error 404 - Not Found")
+        abort(404)
+
+    return app
+
+#Code to reload Werkzeug for certain changes in default settings
+# from https://gist.github.com/nguyenkims/ff0c0c52b6a15ddd16832c562f2cae1d
+
+class AppReloader(object):
+
+    def __init__(self, create_app):
+        self.create_app = create_app
+        self.app = create_app()
+
+    def get_application(self):
+        global to_reload
+
+        if to_reload:
+            self.app = self.create_app()
+            to_reload = False
+
+        return self.app
+
+    def __call__(self, environ, start_response):
+        app = self.get_application()
+        return app(environ, start_response)
+
+# This application object can be used in any WSGI server
+# for example in gunicorn, you can run "gunicorn app"
+application = AppReloader(get_app)
 
 if __name__ == '__main__':
     load_config()
-    app.run(host=bind_addr, port=int(listen_port), debug='True')
+    run_simple(bind_addr, int(listen_port), application, use_reloader=True, use_debugger=True)
