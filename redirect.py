@@ -1,26 +1,26 @@
 import os, configparser, re, sys, time, signal
 from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
-from multiprocessing import Process, Queue
 
+# Sets up the default admin interface redirect
+# has to be defined before Flask initialized to build routes
 global admin_url
-
 admin_url = "admin"
 
-def signal_handler(signal, frame):
-        print('You pressed Ctrl+C!')
-        sys.exit(0)
+# Generate Flask app object
+app = Flask(__name__)
 
+# Sends bind address and port back to gunicorn config for launch
 def load_bind():
     load_config()
 
     return str(bind_addr + ":" + listen_port)
 
-#Read config file to globals
+# Read config file to globals
 def load_config():
     config = configparser.ConfigParser()
 
-    #Setup global variables
+    # Setup global variables
     global localsrv
     global remotesrv
     global ip
@@ -44,25 +44,29 @@ def load_config():
       
     return
 
-#Define default config for when no config file exists
+# Define default config for when no config file exists
 def set_default_config():
     global ip
     global bind_addr
     global listen_port
     global logging
     global logfile
+    global localsrv
+    global remotesrv
 
     ip = "127.0.0.1"
     bind_addr = "0.0.0.0"
     listen_port = "5000"
     logging = "true"
     logfile = "redirect.log"
+    localsrv = {}
+    remotesrv = {}
 
     write_config()
 
     return
 
-#Update the configuration file with the values form the globals
+# Save globals to configuration file
 def write_config():
     config = configparser.ConfigParser()
 
@@ -77,20 +81,24 @@ def write_config():
     config['LOGGING']['logging'] = logging
     config['LOGGING']['logfile'] = logfile
 
-    for i, v in remotesrv.items():
-        config['REMOTE-SERVERS'][i] = v
-    for i, v in localsrv.items():
-        config['LOCAL-SERVERS'][i] = v
+    if remotesrv:
+        for i, v in remotesrv.items():
+            config['REMOTE-SERVERS'][i] = v
+    if localsrv:
+        for i, v in localsrv.items():
+            config['LOCAL-SERVERS'][i] = v
 
     fh = open('redirect.ini', 'w+')
     config.write(fh)
     fh.close()
 
+    # Reload the config file back to the globals
+    # Probably don't need this, but playing it safe
     load_config()
 
     return
 
-#Add requests to logfile if enabled
+# Add requests to logfile if enabled
 def do_logging(url):
     if logging.upper() == 'TRUE':
         timestamp = str(datetime.now())
@@ -108,7 +116,7 @@ def do_logging(url):
 
     return
 
-#Regex to make sure the form data submissions is valid
+# Regex to make sure the form data submissions is valid
 def validate_form(valdata):
     for data, pattern in valdata.items():
         val = re.match(pattern, data)
@@ -116,6 +124,7 @@ def validate_form(valdata):
             return data
     return
 
+# Change the logfile or enable/disable access logs
 def update_logs():
     global logfile
     global logging
@@ -133,35 +142,35 @@ def update_logs():
 
     return
 
-
+# Reload gunicorn bu HUPping this script's parent
+# The script is running as a worker process of the
+# original gunicorn command that launched the app
+# This is used to reload the server when bind_addr
+# or listen_port change
 def restart():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-    some_queue.put("TRUE")
-    
+    os.kill(os.getppid(), signal.SIGHUP)
 
-app = Flask(__name__)
+    return
 
 @app.route('/css/<path:path>')
-#Hanfle requests for css
+# Handle requests for custom css
 def send_css(path):
     return send_from_directory('templates/css/', path)
 
 @app.route('/vendor/<path:path>')
-#Handle requests for scripts
+# Handle requests for scripts
 def send_js(path):
    return send_from_directory('templates/vendor/', path)
 
 @app.route(str('/' + admin_url))
-#Default admin landing page
+# Default admin landing page
 def send_index():
     do_logging("ADMIN - admin landing page")
 
     return render_template('child.html')
 
 @app.route(str("/" + admin_url + "/default_update"), methods=['POST'])
+# Make changes to application conifiguration settings
 def update_defaults():
     global bind_addr
     global listen_port
@@ -192,7 +201,7 @@ def update_defaults():
     return redirect(str("http://" + ip + ":" + listen_port + "/" + admin_url + "/default"), code="302")
 
 @app.route(str("/" + admin_url + "/local_add"), methods=['POST'])
-#Update Local Server
+# Add a local redirect
 def update_local():
     port_pattern = "^\d{4,5}$"
     formdata = {request.form['port']: port_pattern}
@@ -210,7 +219,7 @@ def update_local():
     return redirect(url_for('view_local_srv'))
 
 @app.route(str("/" + admin_url + "/local_delete"), methods=['POST'])
-#Delete local redirects
+# Delete local redirect
 def delete_local():
     global localsrv
 
@@ -221,7 +230,7 @@ def delete_local():
     return redirect(url_for('view_local_srv'))
 
 @app.route(str("/" + admin_url + "/remote_add"), methods=['POST'])
-#Update Remote Server
+# Add a remote redirection
 def update_remote():
     remotesrv.update({str(request.form['path']) : str(request.form['url'])})
     write_config()
@@ -230,7 +239,7 @@ def update_remote():
     return redirect(url_for('view_remote_srv'))
 
 @app.route(str("/" + admin_url + "/remote_delete"), methods=['POST'])
-#Delete remote redirects
+# Delete remote redirect
 def delete_remote():
     global remotesrv
 
@@ -241,28 +250,28 @@ def delete_remote():
     return redirect(url_for('view_remote_srv'))
 
 @app.route(str("/" + admin_url + "/local"))
-#Display Local Servers
+# View local redirects
 def view_local_srv():
     do_logging("ADMIN - view Local redirects")
 
     return render_template('child.html', ip=ip, title='Local Redirection', localsrv=localsrv)
 
 @app.route(str("/" + admin_url + "/remote"))
-#Display remote servers
+# View remote redirects
 def view_remote_srv():
     do_logging("ADMIN - view remote redirects")
 
     return render_template('child.html', title='Remote Redirection', remotesrv=remotesrv)
 
 @app.route(str("/" + admin_url + "/default"))
-#Display default settings
+# View default configuration
 def view_defaults():
     do_logging("ADMIN - view default settings")
 
     return render_template('child.html', ip=bind_addr, port=listen_port, logfile=logfile, logging=logging, admin_url=admin_url, local_ip=ip, title='Default')
 
 @app.route(str("/" + admin_url + "/logs"))
-#Display remote servers
+# View redirect access logs and admin change logs
 def view_logs():
     do_logging("ADMIN - view logs")
 
@@ -275,6 +284,7 @@ def view_logs():
         return render_template('child.html', title='Redirect Access Logs')
 
 @app.route(str("/" + admin_url + "/clear_logs"), methods=['POST'])
+# Clear the logfile of entries
 def clear_logs():
     if str(request.form['clearlogs']) == '1':
         print "we made it here"
@@ -285,7 +295,7 @@ def clear_logs():
     return redirect(url_for('view_logs'))
 
 @app.route('/<path:path>')
-#Main redirect handler
+# Main redirect handler
 def hello(path):
     for k,v in localsrv.items():
         if path == k:
@@ -299,10 +309,21 @@ def hello(path):
     do_logging("Error 404 - Not Found")
     abort(404)
 
-def start_flaskapp():
-        load_config()
-        app.run(host=bind_addr, port=int(listen_port), debug=True)
-
+# Wrapper in case the script is called directly
 if __name__ == '__main__':
+    
+    def signal_handler(signal, frame):
+    #Generic SIGINT catcher   
+       print "You pressed Ctrl+C"
+       print "Exiting PyRedirector..."
+       sys.exit()
+
     signal.signal(signal.SIGINT, signal_handler)
-    start_flaskapp()
+   
+    print "You are running without a WSGI proxy. This isn't recommended for production."
+    print "If you change the bind address or port you will have to manually restart tge server."
+    print ""
+    
+    load_config() # Setup globals for run
+    # Send to Flask to run on development server
+    app.run(host=bind_addr, port=int(listen_port), debug=True)
