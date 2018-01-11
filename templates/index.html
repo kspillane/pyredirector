@@ -26,7 +26,7 @@
         <div class="col-2 h-100 bg-dark">
             <ul class="sidebar-nav">
                 <li class="sidebar-brand">
-                    <a href="https://github.com/kspillane/pyredirector" target="_new">
+                    <a href="{{ url_for('send_index') }}" target="_new">
                         PyRedirector
                     </a>
                 </li>
@@ -47,11 +47,9 @@
         <!-- /#sidebar-wrapper -->
 
         <!-- Page Content -->
-        <div class="col-md-8">
-            <div class="container">
+            <div class="col"><br>
                 {% block content %}{% endblock %}
             </div>
-        </div>
         <!-- /#page-content-wrapper -->
 
     </div>

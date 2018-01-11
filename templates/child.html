@@ -5,7 +5,7 @@
 {% if (request.path == url_for('view_defaults')) %}
 <div class="col-md-8">
 <div class="row"></div>
-	<h2>Default Settings</h2>
+	<h2>Default Settings</h2><br>
 <div class="col-md-9">
 <form class="form-horizontal" action="{{ url_for('update_defaults') }}" method="POST">
   <div class="row">
@@ -68,7 +68,7 @@
 </div>
 {% elif (request.path == url_for('view_local_srv')) %}
 <div class="col-md-7">
-<h2>Local Redirections</h2>
+<h2>Local Redirections</h2><br>
 <p>Use the table below to add or delete redirections to services running on the local machine.</p>
 <table class="table">
     <thead>
@@ -93,7 +93,7 @@
 	<tr>
 	    <td><input type="text" placeholder="redirect path (i.e. /something)" name="path"></td>
 	    <td><input type="text" placeholder="redirect port (i.e. 12345)" name="port"></td>
-	    <td><button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></td>
+	    <td><button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-plus"></span></button></td>
 	</tr>
 	</form>
     </tbody>
@@ -101,7 +101,7 @@
 </div>
 {% elif (request.path == url_for('view_remote_srv')) %}
 <div class="col-md-7">
-<h2>Redirections to another server</h2>
+<h2>Redirections to another server</h2><br>
 <p>Use the table below to add or delete redirections to services running on another machine.</p>
 <table class="table">
     <thead>
@@ -154,13 +154,19 @@
 {% endif %}
 </div>
 {% elif (request.path == url_for('send_index')) %}
-<div class="col-md-5">
+<div class="col-md-7">
 	<h2>PyRedirector Administration</h2>
 	<br>
-	<p>Use the links on the left to make changes to URL redirections and other application options. Check out the <a href="https://www.github.com/kspillane/pyredirector" target="_new">GitHub page</a> for more information.</p>
+	<p>Use the links on the left to make changes to URL redirections and other application options.</p>
+	<p>Check out the <a href="https://www.github.com/kspillane/pyredirector" target="_new">GitHub page</a> for more information.</p>
+	<br>
+	<h3>Need Help?</h3>
+	<p>View the <a href="https://github.com/kspillane/wiki" target="_new">wiki</a> for more information on how to use the program.</p>
+	<h3>Still having problems or have an idea for a feature?</h3>
+	<p>Submit an issue <a href="https://github.com/kspillane/pyredirector/issues" target="_new">here</a>.
 </div>
 {% else %}
-<div class="col-md-5">
+<div class="col-md-7">
 <h2>The requested URL: {{ request.path }} has not been coded for yet.</h2>
 <p>Sorry, check back soon!</p>
 </div>

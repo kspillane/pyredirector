@@ -344,4 +344,4 @@ if __name__ == '__main__':
 
     load_config() # Setup globals for run
     # Send to Flask to run on development server
-    app.run(host=bind_addr, port=int(listen_port), debug=True)
+    app.run(host=bind_addr, port=int(listen_port))
