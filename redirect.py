@@ -1,3 +1,21 @@
+#
+# PyRedirector
+#
+# A URL redirector for managing servers running on non-standard ports
+# and without DNS on small and homelab networks. Written in Python.
+# with Gunicorn config script to handle the WSGI frontend.
+#
+# Refer to project homepage https://github.com/kspillane/pyredirector
+# for more information and to submit issues. Available under the MIT
+# license. Refer to LISENCE file for details.
+#
+# Copyright Kyle Spillane - spillman@gmail.com
+#
+#
+# This file contains the main program functions and can be ran bu itself
+# or (ideally) with gunicorn a WSGI frontend used for this sort of thing.
+#
+
 import os, configparser, re, sys, time, signal
 from flask import Flask,redirect,abort,request,send_from_directory,render_template,url_for
 from datetime import datetime
@@ -323,7 +341,7 @@ if __name__ == '__main__':
     print "You are running without a WSGI proxy. This isn't recommended for production."
     print "If you change the bind address or port you will have to manually restart tge server."
     print ""
-    
+
     load_config() # Setup globals for run
     # Send to Flask to run on development server
     app.run(host=bind_addr, port=int(listen_port), debug=True)

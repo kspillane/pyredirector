@@ -3,8 +3,9 @@
 {% block content %}
 {{ super() }}
 {% if (request.path == url_for('view_defaults')) %}
-<div class="col-md-8"><h2>Default Settings</h2>
-<br>
+<div class="col-md-8">
+<div class="row"></div>
+	<h2>Default Settings</h2>
 <div class="col-md-9">
 <form class="form-horizontal" action="{{ url_for('update_defaults') }}" method="POST">
   <div class="row">
